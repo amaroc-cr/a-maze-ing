@@ -20,14 +20,14 @@ class Maze:
             self,
             width: int,
             height: int,
-            entry: tuple[int, int], # (y,x)
-            exit: tuple[int, int], # (y,x)
+            entry: tuple[int, int], # (x,y)
+            exit: tuple[int, int], # (x,y)
             perfect: bool
     ):
         self._width = width + 2
         self._height = height + 2
-        self._entry = (entry[0] + 1, entry[1] + 1)
-        self._exit = (exit[0] + 1, exit[1] + 1)
+        self._entry = (entry[1] + 1, entry[0] + 1)
+        self._exit = (exit[1] + 1, exit[0] + 1)
         self._perfect = perfect
         self._maze = self.create_grid()
         self._path = ""
@@ -133,8 +133,3 @@ class Maze:
 
     def gen_fourtytwo(self) -> None:
         pass
-
-
-if __name__ == "__main__":
-    maze = Maze(3, 3, (0, 0), (2, 2), True) #input entry and exit is (y,x)
-    print(maze)
