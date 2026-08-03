@@ -10,7 +10,7 @@ class Cell:
         self.visited = 0
 
     def __str__(self) -> str:
-        bi = str(self.n) + str(self.e) + str(self.s) + str(self.w)
+        bi = str(self.w) + str(self.s) + str(self.e) + str(self.n)
         return bi_to_hd(bi)
 
 
@@ -40,8 +40,8 @@ class Maze:
             for cell in self._maze[row][1:-1]:
                 temp.append(str(cell))
             temp.append("\n")
-        temp.append(f"\n{self._entry[1] - 1},{self._entry[0] - 1}          # entry   (x,y)\n")
-        temp.append(f"{self._exit[1] - 1},{self._exit[0] - 1}          # exit   (x,y)\n")
+        temp.append(f"\n{self._entry[1] - 1},{self._entry[0] - 1}\n")
+        temp.append(f"{self._exit[1] - 1},{self._exit[0] - 1}\n")
         temp.append(f"{self._path}\n")
         s = "".join(temp)
         return s
@@ -136,5 +136,5 @@ class Maze:
 
 
 if __name__ == "__main__":
-    maze = Maze(9, 9, (0, 0), (0, 2), True) #input entry and exit is (y,x)
+    maze = Maze(3, 3, (0, 0), (2, 2), True) #input entry and exit is (y,x)
     print(maze)
