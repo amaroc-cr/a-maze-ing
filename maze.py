@@ -1,4 +1,5 @@
 import random
+from collections import deque
 from conversions import bi_to_hd
 
 class Cell:
@@ -9,6 +10,7 @@ class Cell:
         self.n = self.e = self.s = self.w = 1
         self.visited = 0
         self.available = 1
+        self.move_to_cell = ""
 
     def __str__(self) -> str:
         bi = str(self.w) + str(self.s) + str(self.e) + str(self.n)
@@ -73,8 +75,8 @@ class Maze:
         # self.gen_fourtytwo()
         if self._perfect:
             self.gen_perfect_maze()
-        # else:
-        #     self.gen_imperfect_maze()
+        else:
+            self.gen_imperfect_maze()
 
     def check_neighbours(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze
@@ -112,24 +114,28 @@ class Maze:
         walls.append(number)
         return walls
 
-    def move_to_next(self, current: tuple[int, int], move: str) -> tuple[int, int]:
+    def move_to_next(self, current: tuple[int, int], move: str, break_wall: int = 0) -> tuple[int, int]:
         maze = self._maze
         if move == "N":
-            maze[current[0]][current[1]].n = 0
+            if break_wall:
+                maze[current[0]][current[1]].n = 0
+                maze[current[0] - 1][current[1]].s = 0
             current = (current[0] - 1, current[1])
-            maze[current[0]][current[1]].s = 0
         if move == "E":
-            maze[current[0]][current[1]].e = 0
+            if break_wall:
+                maze[current[0]][current[1]].e = 0
+                maze[current[0]][current[1] + 1].w = 0
             current = (current[0], current[1] + 1)
-            maze[current[0]][current[1]].w = 0
         if move == "S":
-            maze[current[0]][current[1]].s = 0
+            if break_wall:
+                maze[current[0]][current[1]].s = 0
+                maze[current[0] + 1][current[1]].n = 0
             current = (current[0] + 1, current[1])
-            maze[current[0]][current[1]].n = 0
         if move == "W":
-            maze[current[0]][current[1]].w = 0
+            if break_wall:
+                maze[current[0]][current[1]].w = 0
+                maze[current[0]][current[1] - 1].e = 0
             current = (current[0], current[1] - 1)
-            maze[current[0]][current[1]].e = 0
         maze[current[0]][current[1]].visited = 1
         return current
 
@@ -145,7 +151,7 @@ class Maze:
                 move = random.choice(unvis_neighbours)
                 moves.append(move)
                 stack.append(current)
-                current = self.move_to_next(current, move)
+                current = self.move_to_next(current, move, 1)
                 if self._exit[0] == current[0] and self._exit[1] == current[1]:
                     self._path = "".join(moves)
             else:
@@ -165,7 +171,7 @@ class Maze:
                     number = walls.pop()
                     if number == 3 and walls:
                         move = random.choice(walls)
-                        self.move_to_next((i, j), move)
+                        self.move_to_next((i, j), move, 1)
         self._path = self.find_path()
 
     def find_path(self) -> str:
@@ -173,15 +179,38 @@ class Maze:
         for i in range(self._height):
             for j in range(self._width):
                 maze[i][j].visited = 0
-        current = self._entry
-        maze[current[0]][current[1]].visited = 1
-        queue = [current]
+        start = self._entry
+        maze[start[0]][start[1]].visited = 1
+        queue = deque()
+        queue.append(start)
         while queue:
-            if self._exit[0] == current[0] and self._exit[1] == current[1]:
-                break
+            current = queue.popleft()
             unvis_neighbours = self.check_neighbours(current)
             walls = self.check_walls(current)
-            moves = unvis_neighbours.difference(walls)
+            moves = set(unvis_neighbours).difference(walls)
+            for move in moves:
+                next = self.move_to_next(current, move)
+                maze[next[0]][next[1]].move_to_cell = move
+                if self._exit[0] == next[0] and self._exit[1] == next[1]:
+                    break
+                maze[next[0]][next[1]].visited = 1
+                queue.append(next)
+        current = self._exit
+        path = []
+        while not current[0] == self._entry[0] and not current[1] == self._exit[1]:
+            move = maze[current[0]][current[1]].move_to_cell
+            path.append(move)
+            if move == "N":
+                current = self.move_to_next(current, "S")
+            if move == "E":
+                current = self.move_to_next(current, "W")
+            if move == "S":
+                current = self.move_to_next(current, "N")
+            if move == "W":
+                current = self.move_to_next(current, "E")
+        path.reverse()
+        res = "".join(path)
+        return res
 
     def gen_outer_circle(self) -> None:
         maze = self._maze
