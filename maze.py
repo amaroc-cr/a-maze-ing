@@ -8,12 +8,13 @@ class Cell:
         self.y = y
         self.n = self.e = self.s = self.w = 1
         self.visited = 0
+        self.available = 1
 
     def __str__(self) -> str:
         bi = str(self.w) + str(self.s) + str(self.e) + str(self.n)
         return bi_to_hd(bi)
 
-    def check_walls(self) -> list[str]:
+    def check_walls(self) -> list[str]: #do i actually use this?
         walls = []
         if self.n:
             walls.append("N")
@@ -75,18 +76,41 @@ class Maze:
         # else:
         #     self.gen_imperfect_maze()
 
-    def check_neighbours(self, current: tuple[int, int], visited: int) -> list[str]:
+    def check_neighbours(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze
         unvis_neighbours = []
-        if maze[current[0] - 1][current[1]].visited == visited:
+        if not maze[current[0] - 1][current[1]].visited and maze[current[0] - 1][current[1]].available:
             unvis_neighbours.append("N")
-        if maze[current[0]][current[1] + 1].visited == visited:
+        if not maze[current[0]][current[1] + 1].visited and maze[current[0]][current[1] + 1].available:
             unvis_neighbours.append("E")
-        if maze[current[0] + 1][current[1]].visited == visited:
+        if not maze[current[0] + 1][current[1]].visited and maze[current[0] + 1][current[1]].available:
             unvis_neighbours.append("S")
-        if maze[current[0]][current[1] - 1].visited == visited:
+        if not maze[current[0]][current[1] - 1].visited and maze[current[0]][current[1] - 1].available:
             unvis_neighbours.append("W")
         return unvis_neighbours
+
+    def check_walls(self, current: tuple[int, int]) -> list[str|int]:
+        maze = self._maze
+        walls = []
+        number = 0
+        if maze[current[0]][current[1]].n:
+            number += 1
+            if maze[current[0] - 1][current[1]].available:
+                walls.append("N")
+        if maze[current[0]][current[1]].e:
+            number += 1
+            if maze[current[0]][current[1] + 1].available:
+                walls.append("E")
+        if maze[current[0]][current[1]].s:
+            number += 1
+            if maze[current[0] + 1][current[1]].available:
+                walls.append("S")
+        if maze[current[0]][current[1]].w:
+            number += 1
+            if maze[current[0]][current[1] - 1].available:
+                walls.append("W")
+        walls.append(number)
+        return walls
 
     def move_to_next(self, current: tuple[int, int], move: str) -> tuple[int, int]:
         maze = self._maze
@@ -116,7 +140,7 @@ class Maze:
         stack = []
         moves = []
         while True:
-            unvis_neighbours = self.check_neighbours(current, 0)
+            unvis_neighbours = self.check_neighbours(current)
             if unvis_neighbours:
                 move = random.choice(unvis_neighbours)
                 moves.append(move)
@@ -133,24 +157,31 @@ class Maze:
 
     def gen_imperfect_maze(self) -> None:
         maze = self._maze
-        for i in range(len(maze)):
-            for j in range(len(maze[i])):
-                if maze[i][j].visited == 1:
-                    maze[i][j].visited = -1
+        self.gen_perfect_maze()
+        for i in range(self._height):
+            for j in range(self._width):
+                if maze[i][j].available:
+                    walls = self.check_walls((i, j))
+                    number = walls.pop()
+                    if number == 3 and walls:
+                        move = random.choice(walls)
+                        self.move_to_next((i, j), move)
+        self._path = self.find_path()
+
+    def find_path(self) -> str:
+        maze = self._maze
+        for i in range(self._height):
+            for j in range(self._width):
+                maze[i][j].visited = 0
         current = self._entry
         maze[current[0]][current[1]].visited = 1
-        stack = []
-        while True:
-            unvis_neighbours = self.check_neighbours(current, 0)
-            if unvis_neighbours:
-                move = random.choice(unvis_neighbours)
-                stack.append(current)
-                current = self.move_to_next(current, move)
-            else:
-                avail_neighbours = self.check_neighbours(current, 1)
-                walls = maze[current[0]][current[1]].check_walls()
-                move = random.choice(avail_neighbours.intersection(walls))#this is going wrong, because of the backtracking it's breaking down all walls
-        # same thing as perfect maze, but breaking through dead ends
+        queue = [current]
+        while queue:
+            if self._exit[0] == current[0] and self._exit[1] == current[1]:
+                break
+            unvis_neighbours = self.check_neighbours(current)
+            walls = self.check_walls(current)
+            moves = unvis_neighbours.difference(walls)
 
     def gen_outer_circle(self) -> None:
         maze = self._maze
@@ -162,12 +193,14 @@ class Maze:
             left. n = left.s = left.w = 0
             right.n = right.e = right.s = 0
             left.visited = right.visited = 1
+            left.available = right.available = 0
         for i in range(row_len):
             top = maze[0][i]
             bottom = maze[col_len - 1][i]
             top.n = top.e = top.w = 0
             bottom.e = bottom.s = bottom.w = 0
             top.visited = bottom.visited = 1
+            top.available = right.available = 0 #kan dit misschien nog in een losse functie? Die ik ook gebruik voor de 42
 
     def gen_fourtytwo(self) -> None:
         pass
