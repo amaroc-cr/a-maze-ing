@@ -3,6 +3,7 @@ import parsing
 from maze import Maze
 from render_no_animation import render
 
+
 def main() -> None:
     if len(sys.argv) < 2 or len(sys.argv) >= 3:
         print("Usage: a_maze_ing.py <file>")
@@ -24,6 +25,7 @@ def main() -> None:
         f = open(output_file, "w")
         f.write(str(maze))
         print(render(maze))
+
 
 if __name__ == "__main__":
     main()
