@@ -11,16 +11,16 @@ def main() -> None:
         config_file = sys.argv[1]
         try:
             maze_specs = parsing.parse_config(config_file)
+            maze = Maze(
+                        maze_specs["WIDTH"],
+                        maze_specs["HEIGHT"],
+                        maze_specs["ENTRY"],
+                        maze_specs["EXIT"],
+                        maze_specs["PERFECT"]
+                    )
         except parsing.ConfigError as e:
             print(e)
             sys.exit(1)
-        maze = Maze(
-            maze_specs["WIDTH"],
-            maze_specs["HEIGHT"],
-            maze_specs["ENTRY"],
-            maze_specs["EXIT"],
-            maze_specs["PERFECT"]
-        )
         output_file = maze_specs["OUTPUT_FILE"]
         f = open(output_file, "w")
         f.write(str(maze))
