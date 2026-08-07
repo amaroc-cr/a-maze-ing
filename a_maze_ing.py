@@ -1,7 +1,8 @@
 import sys
 import parsing
+
 from maze import Maze
-from render_no_animation import render
+import render
 
 
 def main() -> None:
