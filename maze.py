@@ -1,6 +1,7 @@
 import random
 from collections import deque
 from conversions import bi_to_hd
+from parsing import ConfigError
 
 
 class Cell:
@@ -86,6 +87,7 @@ class Maze:
             self.make_unavailable((self._height - 1, i))
 
     def gen_fourtytwo(self) -> None:
+        maze = self._maze
         middle = (int(self._height / 2), int(self._width / 2))
         start_4 = (middle[0] - 2, middle[1] - 3)
         path_4 = "SSEESS"
@@ -97,6 +99,10 @@ class Maze:
             for move in number[1]:
                 current = self.move_to_next(current, move)
                 self.make_unavailable(current)
+        d = {"Entry": self._entry, "Exit": self._exit}
+        for key in d:
+            if not maze[d[key][0]][d[key][1]].available:
+                raise ConfigError(f"{key} cell inside of 42-logo")
 
     def check_neighbours(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze
