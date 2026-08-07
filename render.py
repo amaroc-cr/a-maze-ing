@@ -1,8 +1,4 @@
 import sys
-import select
-import termios
-import tty
-#import random
 import time
 
 from maze import Maze
@@ -10,26 +6,31 @@ from maze import Maze
 RGB = tuple[int, int, int]
 Pixel = tuple[RGB, str]
 Grid = list[list[Pixel]]
+Theme = dict[str, RGB]
 
-Themes ={
+THEMES: dict[str, Theme] ={
     "grass": {
-        WALL_SEG: (125, 140, 72),
-        FLOOR: (255, 247, 224),
-        ENTRY: (165, 214, 167),
-        EXIT: (255, 171, 145),
-        PATH: (255, 224, 130),
+        "wall": (125, 140, 72),
+        "floor": (255, 247, 224),
+        "entry": (165, 214, 167),
+        "exit": (255, 171, 145),
+        "path": (255, 224, 130),
     },
     "grass night": {
-        WALL_SEG: (194, 217, 111),
-        FLOOR: (25, 29, 105),
-        ENTRY: (217, 147, 35),
-        EXIT: (51, 122, 56),
-        PATH: (142, 222, 209),
+        "wall": (166, 186, 93),
+        "floor": (25, 29, 105),
+        "entry": (217, 147, 35),
+        "exit": (51, 122, 56),
+        "path": (142, 222, 209),
     }
 }
 
 
 RESET = "\033[0m"
+CLEAR = "\033[2J\033[H"
+HOME = "\033[H"
+HIDE_CURSOR = "\033[?251"
+SHOW_CURSOR = "\033[?25h"
 
 
 def bg(rgb) -> str:
@@ -41,11 +42,10 @@ def block(rgb, text="  ") -> str:
     return f"{bg(rgb)}{text}{RESET}"
 
 
-def print_grid(maze: Maze) -> tuple[Grid, int, int]:
-    theme_keys = list(THEMES.keys())
+def draw_grid(maze: Maze, theme: Theme) -> Grid:
     W = maze._width -2
     H = maze._height - 2
-    grid = [[(FLOOR, "  ") for _ in range(W * 2 + 1)] for _ in range(H * 2 + 1)]
+    grid = [[(theme["floor"], "  ") for _ in range(W * 2 + 1)] for _ in range(H * 2 + 1)]
 
     for row in range(H):
         for col in range(W):
@@ -53,21 +53,29 @@ def print_grid(maze: Maze) -> tuple[Grid, int, int]:
             gr, gc = row * 2 + 1, col * 2 + 1
 
             #corners
-            grid[gr - 1][gc - 1] = (WALL_SEG, "  ")
-            grid[gr - 1][gc + 1] = (WALL_SEG, "  ")
-            grid[gr + 1][gc - 1] = (WALL_SEG, "  ")
-            grid[gr + 1][gc + 1] = (WALL_SEG, "  ")
+            grid[gr - 1][gc - 1] = (them["wall"], "  ")
+            grid[gr - 1][gc + 1] = (them["wall"], "  ")
+            grid[gr + 1][gc - 1] = (them["wall"], "  ")
+            grid[gr + 1][gc + 1] = (them["wall"], "  ")
 
+            #walls
             if cell.n:
-                grid[gr - 1][gc] = (WALL_SEG, "  ")
+                grid[gr - 1][gc] = (them["wall"], "  ")
             if cell.s:
-                grid[gr + 1][gc] = (WALL_SEG, "  ")
+                grid[gr + 1][gc] = (them["wall"], "  ")
             if cell.w:
-                grid[gr][gc - 1] = (WALL_SEG, "  ")
+                grid[gr][gc - 1] = (them["wall"], "  ")
             if cell.e:
-                grid[gr][gc + 1] = (WALL_SEG, "  ")
+                grid[gr][gc + 1] = (them["wall"], "  ")
 
-    return grid, H, W
+    #entry and exit
+    entry_r, entry_c = maze._entry[0] - 1, maze._entry[1] - 1
+    exit_r, exit_c = maze._exit[0] - 1, maze._exit[1] - 1
+
+    grid[entry_r * 2 + 1][entry_c * 2 + 1] = (theme["entry"], "  ")
+    grid[exit_r * 2 + 1][exit_c * 2 + 1] = (theme["exit"], "  ")
+
+    return grid
 
 
 def path_cells(maze: Maze) -> list[tuple[int, int]]:
@@ -89,26 +97,39 @@ def path_cells(maze: Maze) -> list[tuple[int, int]]:
     return cells
 
 
-def grid_to_lines(grid: Grid) -> list[str]:
+def grid_to_strings(grid: Grid) -> list[str]:
     return ["".join(block(rgb, text) for rgb, text in row) for row in grid]
 
 
-def is_data() -> bool:
-    return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
+def render(maze: Maze, theme_name: str = "grass", show_path: bool = False) -> str:
+    theme = THEMES[theme_name]
+    grid = draw_grid(maze)
+
+    if show_path:
+        for r, c in path_cells(maze):
+            grid[r * 2 + 1][c * 2 + 1] = (theme["path"], " +")
+
+    return "\n".join(grid_to_strings(grid)) + "\n"
 
 
-def render(maze: Maze, delay: float = 0.05) -> None:
-    grid, H, W = print_grid(maze)
+def render_anima(maze: Maze, theme_name: str = "grass", delay: float = 0.04) -> None:
+    theme = THEMES[theme_name]
+    grid = draw_grid(maze)
 
-    entry_r, entry_c = maze._entry[0] - 1, maze._entry[1] - 1
-    exit_r, exit_c = maze._exit[0] - 1, maze._exit[1] - 1
-
-    grid[entry_r * 2 + 1][entry_c * 2 + 1] = (ENTRY, "  ")
-    grid[exit_r * 2 + 1][exit_c * 2 + 1] = (EXIT, "  ")
-
-    sys.stdout.write("\033[?25l")
+    sys.stdout.write(HIDE_CURSOR)
+    sys.stdout.write(grid_to_strings(grid))
+    sys.stdout.flush()
 
     for r, c in path_cells(maze):
-        grid[r * 2 + 1][c * 2 + 1] = (PATH, "  ")
+        grid[r * 2 + 1][c * 2 + 1] = (theme["path"], " +")
+        sys.stdout.write(HOME + grid_to_strings(grid))
+        sys.stdout.flush()
+        time.sleep(delay)
 
-    return "\n".join(grid_to_lines(grid)) + "\n"
+    sys.stdout.write("\n" + SHOW_CURSOR)
+    sys.stdout.flush()
+
+
+def new_maze(width: int, height: int, entry: tuple[int, int],
+    exit: tuple, perfect: bool) -> Maze:
+    return Maze(width, height, entry, exit, perfect)

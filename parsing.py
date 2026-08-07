@@ -48,6 +48,9 @@ def parse_config(path: str)->dict:
     config["EXIT"] = parse_coord(config["EXIT"], "EXIT", config["WIDTH"], config["HEIGHT"])
     config["PERFECT"] = parse_bool(config["PERFECT"], "PERFECT")
 
+    if config["ENTRY"] == config["EXIT"]:
+        raise ConfigError("Entry and exit cannot be the same")
+
     if not config["OUTPUT_FILE"]:
         raise ConfigError("OUTPUT_FILE cannot be empty")
 
