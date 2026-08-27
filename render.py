@@ -29,7 +29,7 @@ THEMES: dict[str, Theme] ={
 RESET = "\033[0m"
 CLEAR = "\033[2J\033[H"
 HOME = "\033[H"
-HIDE_CURSOR = "\033[?251"
+HIDE_CURSOR = "\033[?25l"
 SHOW_CURSOR = "\033[?25h"
 
 
@@ -53,20 +53,20 @@ def draw_grid(maze: Maze, theme: Theme) -> Grid:
             gr, gc = row * 2 + 1, col * 2 + 1
 
             #corners
-            grid[gr - 1][gc - 1] = (them["wall"], "  ")
-            grid[gr - 1][gc + 1] = (them["wall"], "  ")
-            grid[gr + 1][gc - 1] = (them["wall"], "  ")
-            grid[gr + 1][gc + 1] = (them["wall"], "  ")
+            grid[gr - 1][gc - 1] = (theme["wall"], "  ")
+            grid[gr - 1][gc + 1] = (theme["wall"], "  ")
+            grid[gr + 1][gc - 1] = (theme["wall"], "  ")
+            grid[gr + 1][gc + 1] = (theme["wall"], "  ")
 
             #walls
             if cell.n:
-                grid[gr - 1][gc] = (them["wall"], "  ")
+                grid[gr - 1][gc] = (theme["wall"], "  ")
             if cell.s:
-                grid[gr + 1][gc] = (them["wall"], "  ")
+                grid[gr + 1][gc] = (theme["wall"], "  ")
             if cell.w:
-                grid[gr][gc - 1] = (them["wall"], "  ")
+                grid[gr][gc - 1] = (theme["wall"], "  ")
             if cell.e:
-                grid[gr][gc + 1] = (them["wall"], "  ")
+                grid[gr][gc + 1] = (theme["wall"], "  ")
 
     #entry and exit
     entry_r, entry_c = maze._entry[0] - 1, maze._entry[1] - 1
@@ -103,26 +103,26 @@ def grid_to_strings(grid: Grid) -> list[str]:
 
 def render(maze: Maze, theme_name: str = "grass", show_path: bool = False) -> str:
     theme = THEMES[theme_name]
-    grid = draw_grid(maze)
+    grid = draw_grid(maze, theme)
 
     if show_path:
         for r, c in path_cells(maze):
-            grid[r * 2 + 1][c * 2 + 1] = (theme["path"], " +")
+            grid[r * 2 + 1][c * 2 + 1] = (theme["path"], "+")
 
     return "\n".join(grid_to_strings(grid)) + "\n"
 
 
 def render_anima(maze: Maze, theme_name: str = "grass", delay: float = 0.04) -> None:
     theme = THEMES[theme_name]
-    grid = draw_grid(maze)
+    grid = draw_grid(maze, theme)
 
-    sys.stdout.write(HIDE_CURSOR)
-    sys.stdout.write(grid_to_strings(grid))
+    sys.stdout.write(CLEAR + HIDE_CURSOR)
+    sys.stdout.write('\n'.join(grid_to_strings(grid)))
     sys.stdout.flush()
 
     for r, c in path_cells(maze):
-        grid[r * 2 + 1][c * 2 + 1] = (theme["path"], " +")
-        sys.stdout.write(HOME + grid_to_strings(grid))
+        grid[r * 2 + 1][c * 2 + 1] = (theme["path"], "+")
+        sys.stdout.write(HOME + '\n'.join(grid_to_strings(grid)))
         sys.stdout.flush()
         time.sleep(delay)
 
