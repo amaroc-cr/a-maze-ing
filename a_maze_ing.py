@@ -2,7 +2,8 @@ import sys
 import parsing
 
 from maze import Maze
-import render
+from render import THEMES
+from menu import run_menu
 
 
 def main() -> None:
@@ -25,7 +26,8 @@ def main() -> None:
         output_file = maze_specs["OUTPUT_FILE"]
         f = open(output_file, "w")
         f.write(str(maze))
-        print(render(maze))
+        f.close()
+        run_menu(maze, maze_specs, list(THEMES.keys()))
 
 
 if __name__ == "__main__":

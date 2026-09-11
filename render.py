@@ -1,5 +1,6 @@
 import sys
 import time
+import shutil
 
 from maze import Maze
 
@@ -31,6 +32,18 @@ CLEAR = "\033[2J\033[H"
 HOME = "\033[H"
 HIDE_CURSOR = "\033[?25l"
 SHOW_CURSOR = "\033[?25h"
+
+
+def rendered_size(maze: Maze) -> tuple[int, int]:
+    height = (maze._height - 2) * 2 + 1
+    width = ((maze._width - 2) * 2 + 1) * 2
+    return height, width
+
+
+def fits_terminal(maze: Maze) -> bool:
+    term_cols, term_rows = shutil.get_terminal_size()
+    needed_rows, needed_cols = rendered_size(maze)
+    return needed_rows <= term_rows and needed_cols <= term_cols
 
 
 def bg(rgb) -> str:
@@ -94,7 +107,8 @@ def path_cells(maze: Maze) -> list[tuple[int, int]]:
         elif move == "W":
             col -= 1
         cells.append((row - 1, col - 1))
-    return cells
+
+    return cells[1:-1]
 
 
 def grid_to_strings(grid: Grid) -> list[str]:
@@ -107,7 +121,7 @@ def render(maze: Maze, theme_name: str = "grass", show_path: bool = False) -> st
 
     if show_path:
         for r, c in path_cells(maze):
-            grid[r * 2 + 1][c * 2 + 1] = (theme["path"], "+")
+            grid[r * 2 + 1][c * 2 + 1] = (theme["path"], "  ")
 
     return "\n".join(grid_to_strings(grid)) + "\n"
 
@@ -121,7 +135,7 @@ def render_anima(maze: Maze, theme_name: str = "grass", delay: float = 0.04) -> 
     sys.stdout.flush()
 
     for r, c in path_cells(maze):
-        grid[r * 2 + 1][c * 2 + 1] = (theme["path"], "+")
+        grid[r * 2 + 1][c * 2 + 1] = (theme["path"], "  ")
         sys.stdout.write(HOME + '\n'.join(grid_to_strings(grid)))
         sys.stdout.flush()
         time.sleep(delay)
