@@ -2,11 +2,11 @@
     WIDTH=20
 
     WIDTH=30
-    WIDTH=22
+    WIDTH=6
 
-    HEIGHT=22
+    HEIGHT=6
     # another comment
     ENTRY=0,0
-    EXIT=15,  20
+    EXIT=4,  5
     OUTPUT_FILE=maze.txt
     PERFECT=False

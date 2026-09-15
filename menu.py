@@ -13,10 +13,16 @@ MENU_TEXT = """
 
 
 def print_menu() -> None:
+    """Print the interactive menu options to stdout."""
     print(MENU_TEXT)
 
 
 def get_choice() -> int:
+    """Prompt the user until a valid menu choice (1-4) is entered.
+ 
+    Returns:
+        The chosen option as an integer between 1 and 4.
+    """
     while True:
         raw = input("Choose an option (1-4): ").strip()
         if raw in ("1", "2", "3", "4"):
@@ -25,6 +31,23 @@ def get_choice() -> int:
 
 
 def run_menu(maze: Maze, maze_specs: dict, theme_names: list[str]) -> None:
+    """Run the interactive terminal loop for viewing and manipulating a maze.
+ 
+    Renders the current maze (animating the solution path on
+    first display), shows the menu, and dispatches the user's choice:
+    regenerating the maze, toggling the shortest-path display, cycling
+    through wall color themes, or quitting. The cursor is hidden while
+    the menu is active and always restored on exit, even if an exception
+    occurs.
+ 
+    Args:
+        maze: The Maze instance currently being displayed.
+        maze_specs: Config dict (as produced by parse_config) used to
+            regenerate a new maze and to know where to write it
+            (must contain WIDTH, HEIGHT, ENTRY, EXIT, PERFECT, OUTPUT_FILE).
+        theme_names: Ordered list of theme names to cycle through, each
+            of which must be a key in render.THEMES.
+    """
     theme_nbr = 0
     show_path = True
     animate_new = True
@@ -40,7 +63,9 @@ def run_menu(maze: Maze, maze_specs: dict, theme_names: list[str]) -> None:
             elif animate_new and show_path:
                 render_anima(maze, theme_name)
             else:
-                print(render(maze, theme_name, show_path))        
+                print(render(maze, theme_name, show_path))
+            if maze._width < 11 or maze._height < 9:
+                print("\n(Maze too small for 42 logo)")     
             print_menu()
             sys.stdout.write(SHOW_CURSOR)
             choice = get_choice()
