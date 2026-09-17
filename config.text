@@ -2,11 +2,13 @@
     WIDTH=20
 
     WIDTH=30
-    WIDTH=6
+    WIDTH=26
 
-    HEIGHT=6
+    HEIGHT=19
     # another comment
     ENTRY=0,0
-    EXIT=4,  5
+    EXIT=15,  18
     OUTPUT_FILE=maze.txt
     PERFECT=False
+
+    algorithm = prim

@@ -2,6 +2,9 @@ import sys
 from typing import TypedDict
 
 MANDATORY_KEYS = {"WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"}
+OPTIONAL_KEYS = {"ALGORITHM"}
+ALL_KEYS = MANDATORY_KEYS | OPTIONAL_KEYS
+VALID_ALGORITHMS = {"dfs", "prim"}
 
 
 class ConfigError(Exception):
@@ -15,6 +18,7 @@ class Config(TypedDict):
     EXIT: tuple[int, int]
     OUTPUT_FILE: str
     PERFECT: bool
+    ALGORITHM: str
 
 
 def parse_config(path: str) -> Config:
@@ -79,6 +83,11 @@ def parse_config(path: str) -> Config:
         raise ConfigError(f"Missing mandatory key(s): \
                           {", ".join(sorted(missing))}")
 
+    unknown = raw.keys() - ALL_KEYS
+    if unknown:
+        raise ConfigError(f"Unknown key(s): \
+                          {', '.join(sorted(unknown))}")
+
     width = parse_positive_int(raw["WIDTH"], "WIDTH")
     height = parse_positive_int(raw["HEIGHT"], "HEIGHT")
 
@@ -89,6 +98,7 @@ def parse_config(path: str) -> Config:
         "EXIT": parse_coord(raw["EXIT"], "EXIT", width, height),
         "OUTPUT_FILE": raw["OUTPUT_FILE"],
         "PERFECT": parse_bool(raw["PERFECT"], "PERFECT"),
+        "ALGORITHM": parse_algorithm(raw.get("ALGORITHM", "dfs"))
     }
 
     if config["ENTRY"] == config["EXIT"]:
@@ -189,6 +199,29 @@ def parse_bool(value: str, key: str) -> bool:
     else:
         raise ConfigError(f"{key} must be a boolean (True/False), \
                           got: {value!r}")
+
+
+def parse_algorithm(value: str):
+    """Parse and validate the maze generation algorithm name.
+
+    Accepts "dfs" or "prim", case-insensitive.
+
+    Args:
+        value: The raw string value to parse.
+
+    Returns:
+        The algorithm name, lowercased.
+
+    Raises:
+        ConfigError: If value isn't one of the supported algorithms.
+    """
+    v = value.strip().lower()
+    if v not in VALID_ALGORITHMS:
+        raise ConfigError(
+            f"Algorithm must be one of {sorted(VALID_ALGORITHMS)},  \
+            got :{value!r}"
+        )
+    return v
 
 
 def main() -> None:
