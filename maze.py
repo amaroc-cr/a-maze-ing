@@ -1,10 +1,36 @@
 import random
 from collections import deque
-from conversions import bi_to_hd
 from parsing import ConfigError
 
 
 class Cell:
+    """
+    Represents a cell and its four walls in the maze.
+
+    Attributes:
+        x, y : int
+            X-coordinate, Y-coordinate.
+        n, e, s, w : int
+            If there is a wall on the north, east, south, west side.
+            (1 if there is a wall, 0 if there is no wall.)
+        visited : int
+            If the cell is visited by the maze generation algorithm.
+            (1 if it is visited, 0 if it's not.)
+        available : int
+            If the cell is available to the maze generation algorithm.
+            (Cells on outside border and inside 42 logo are unavailable.)
+        move_to_cell : str
+            Which way the pathfinder moves to reach this cell.
+            (Either "", "N", "E", "S" or "W")
+
+    Methods:
+        __str__():
+            Represents the four walls (n, e, s, w) as one hexadecimal digit.
+        dead_end():
+            Checks if this cell is a dead end by checking if it has 3 walls.
+        bi_to_hd():
+            Converts a four-digit binary number to hexadecimal.
+    """
 
     def __init__(self, y: int, x: int,):
         self.x = x
@@ -15,15 +41,70 @@ class Cell:
         self.move_to_cell = ""
 
     def __str__(self) -> str:
+        """
+        Represents the existence of the four walls (n, e, s, w) in hexadecimal.
+            Examples:
+                wall at north = 0001 = 1
+                wall at east = 0010 = 2
+                wall at south = 0100 = 4
+                wall at west = 1000 = 8
+                walls at north and east = 0011 = 3
+                walls at east and west = 1010 = A
+
+        Returns:
+            str: One hexadecimal digit that represents the four walls.
+        """
         bi = str(self.w) + str(self.s) + str(self.e) + str(self.n)
-        return bi_to_hd(bi)
+        return Cell.bi_to_hd(bi)
 
     def dead_end(self) -> bool:
+        """
+        Checks if this cell is a dead end by checking if it has 3 walls.
+
+        Returns:
+            bool: True if the cell is a dead end, False if not.
+        """
         walls = self.n + self.e + self.s + self.w
         return (walls == 3)
 
+    @staticmethod
+    def bi_to_hd(s: str) -> str:
+        """"
+        Converts a four-digit binary number to hexadecimal.
+
+        Args:
+            s (str): four-digit binary number.
+        Returns:
+            str: number in hexadecimal.
+        """
+        dec = (
+            2 ** 3 * int(s[0])
+            + 2 ** 2 * int(s[1])
+            + 2 ** 1 * int(s[2])
+            + 2 ** 0 * int(s[3])
+        )
+        if dec < 10:
+            return chr(dec + 48)
+        else:
+            return chr(dec + 87)
+
 
 class Maze:
+    """
+    (....)
+
+    Attributes:
+        width, height : int
+            Width and height of maze in number of cells,
+            including extra outer circle of unavailable cells.
+        entry, exit : tuple[int, int]
+            The entry and exit of the maze.
+            Format: (y, x)
+        perfect : bool
+            True if the maze is perfect (exactly one path possible).
+            False if the maze is imperfect (at least two paths, no dead-ends).
+        (...)
+    """
 
     def __init__(
             self,
