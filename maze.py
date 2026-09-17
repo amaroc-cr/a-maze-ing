@@ -112,13 +112,15 @@ class Maze:
             height: int,
             entry: tuple[int, int],  # (x,y)
             exit: tuple[int, int],  # (x,y)
-            perfect: bool
+            perfect: bool,
+            algo: str = "dfs"
     ):
         self._width = width + 2
         self._height = height + 2
         self._entry = (entry[1] + 1, entry[0] + 1)
         self._exit = (exit[1] + 1, exit[0] + 1)
         self._perfect = perfect
+        self._algo = algo
         self._maze = self.create_grid()
         self.gen_maze()
         self._path = self.find_path()
@@ -185,7 +187,7 @@ class Maze:
             if not maze[d[key][0]][d[key][1]].available:
                 raise ConfigError(f"{key} cell inside of 42-logo")
 
-    def check_neighbours(self, current: tuple[int, int]) -> list[str]:
+    def check_unvis_neighbours(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze
         unvis_neighbours = []
         if (
@@ -209,6 +211,31 @@ class Maze:
         ):
             unvis_neighbours.append("W")
         return unvis_neighbours
+
+    def check_vis_neighbours(self, current: tuple[int, int]) -> list[str]:
+        maze = self._maze
+        vis_neighbours = []
+        if (
+            maze[current[0] - 1][current[1]].visited
+            and maze[current[0] - 1][current[1]].available
+        ):
+            vis_neighbours.append("N")
+        if (
+            maze[current[0]][current[1] + 1].visited
+            and maze[current[0]][current[1] + 1].available
+        ):
+            vis_neighbours.append("E")
+        if (
+            maze[current[0] + 1][current[1]].visited
+            and maze[current[0] + 1][current[1]].available
+        ):
+            vis_neighbours.append("S")
+        if (
+            maze[current[0]][current[1] - 1].visited
+            and maze[current[0]][current[1] - 1].available
+        ):
+            vis_neighbours.append("W")
+        return vis_neighbours
 
     def check_walls(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze
@@ -264,13 +291,19 @@ class Maze:
             current = (current[0], current[1] - 1)
         return current
 
-    def gen_perfect_maze(self) -> None:  # Algorithm: DFS with backtracking
+    def gen_perfect_maze(self) -> None:
+        if self._algo == "prim":
+            self.prim_maze_gen()
+        else:
+            self.dfs_maze_gen()
+
+    def dfs_maze_gen(self) -> None:
         maze = self._maze
         current = self._entry
         maze[current[0]][current[1]].visited = 1
         stack = []
         while True:
-            unvis_neighbours = self.check_neighbours(current)
+            unvis_neighbours = self.check_unvis_neighbours(current)
             if unvis_neighbours:
                 move = random.choice(unvis_neighbours)
                 stack.append(current)
@@ -281,6 +314,25 @@ class Maze:
                     current = stack.pop()
                 else:
                     break
+
+    def prim_maze_gen(self) -> None:
+        maze = self._maze
+        frontiers = []
+        current = self._entry
+        while True:
+            maze[current[0]][current[1]].visited = 1
+            unvis_neighbours = self.check_unvis_neighbours(current)
+            for move in unvis_neighbours:
+                new = self.move_to_next(current, move)
+                if new not in frontiers and not maze[new[0]][new[1]].visited:
+                    frontiers.append(new)
+            if not frontiers:
+                break
+            current = random.choice(frontiers)
+            frontiers.remove(current)
+            vis_neighbours = self.check_vis_neighbours(current)
+            move = random.choice(vis_neighbours)
+            self.move_to_next(current, move, 1)
 
     def gen_imperfect_maze(self) -> None:
         maze = self._maze
@@ -310,7 +362,7 @@ class Maze:
             if exit_found:
                 break
             current = queue.popleft()
-            unvis_neighbours = self.check_neighbours(current)
+            unvis_neighbours = self.check_unvis_neighbours(current)
             walls = self.check_walls(current)
             moves = set(unvis_neighbours).difference(walls)
             for move in moves:

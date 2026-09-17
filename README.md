@@ -62,6 +62,7 @@ A working example is included in the repository as `config.txt`.
 * [`Wikipedia: Maze generation algorithm`](https://en.wikipedia.org/wiki/Maze_generation_algorithm)
 * [`Geeks for geeks: how to convert binary to hexadecimal`](https://www.geeksforgeeks.org/maths/how-to-convert-binary-to-hexadecimal/)
 * [`Geeks for geeks: breadth first search`](https://www.geeksforgeeks.org/dsa/breadth-first-search-or-bfs-for-a-graph/)
+* [`Maze Generation: Prim's Algorithm`](https://weblog.jamisbuck.org/2011/1/10/maze-generation-prim-s-algorithm)
 
 ### AI usage
 
