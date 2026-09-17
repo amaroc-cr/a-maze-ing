@@ -1,10 +1,36 @@
 import random
 from collections import deque
-from conversions import bi_to_hd
 from parsing import ConfigError
 
 
 class Cell:
+    """
+    Represents a cell and its four walls in the maze.
+
+    Attributes:
+        x, y : int
+            X-coordinate, Y-coordinate.
+        n, e, s, w : int
+            If there is a wall on the north, east, south, west side.
+            (1 if there is a wall, 0 if there is no wall.)
+        visited : int
+            If the cell is visited by the maze generation algorithm.
+            (1 if it is visited, 0 if it's not.)
+        available : int
+            If the cell is available to the maze generation algorithm.
+            (Cells on outside border and inside 42 logo are unavailable.)
+        move_to_cell : str
+            Which way the pathfinder moves to reach this cell.
+            (Either "", "N", "E", "S" or "W")
+
+    Methods:
+        __str__():
+            Represents the four walls (n, e, s, w) as one hexadecimal digit.
+        dead_end():
+            Checks if this cell is a dead end by checking if it has 3 walls.
+        bi_to_hd():
+            Converts a four-digit binary number to hexadecimal.
+    """
 
     def __init__(self, y: int, x: int,):
         self.x = x
@@ -15,15 +41,70 @@ class Cell:
         self.move_to_cell = ""
 
     def __str__(self) -> str:
+        """
+        Represents the existence of the four walls (n, e, s, w) in hexadecimal.
+            Examples:
+                wall at north = 0001 = 1
+                wall at east = 0010 = 2
+                wall at south = 0100 = 4
+                wall at west = 1000 = 8
+                walls at north and east = 0011 = 3
+                walls at east and west = 1010 = A
+
+        Returns:
+            str: One hexadecimal digit that represents the four walls.
+        """
         bi = str(self.w) + str(self.s) + str(self.e) + str(self.n)
-        return bi_to_hd(bi)
+        return Cell.bi_to_hd(bi)
 
     def dead_end(self) -> bool:
+        """
+        Checks if this cell is a dead end by checking if it has 3 walls.
+
+        Returns:
+            bool: True if the cell is a dead end, False if not.
+        """
         walls = self.n + self.e + self.s + self.w
         return (walls == 3)
 
+    @staticmethod
+    def bi_to_hd(s: str) -> str:
+        """"
+        Converts a four-digit binary number to hexadecimal.
+
+        Args:
+            s (str): four-digit binary number.
+        Returns:
+            str: number in hexadecimal.
+        """
+        dec = (
+            2 ** 3 * int(s[0])
+            + 2 ** 2 * int(s[1])
+            + 2 ** 1 * int(s[2])
+            + 2 ** 0 * int(s[3])
+        )
+        if dec < 10:
+            return chr(dec + 48)
+        else:
+            return chr(dec + 87)
+
 
 class Maze:
+    """
+    (....)
+
+    Attributes:
+        width, height : int
+            Width and height of maze in number of cells,
+            including extra outer circle of unavailable cells.
+        entry, exit : tuple[int, int]
+            The entry and exit of the maze.
+            Format: (y, x)
+        perfect : bool
+            True if the maze is perfect (exactly one path possible).
+            False if the maze is imperfect (at least two paths, no dead-ends).
+        (...)
+    """
 
     def __init__(
             self,
@@ -31,13 +112,15 @@ class Maze:
             height: int,
             entry: tuple[int, int],  # (x,y)
             exit: tuple[int, int],  # (x,y)
-            perfect: bool
+            perfect: bool,
+            algo: str = "dfs"
     ):
         self._width = width + 2
         self._height = height + 2
         self._entry = (entry[1] + 1, entry[0] + 1)
         self._exit = (exit[1] + 1, exit[0] + 1)
         self._perfect = perfect
+        self._algo = algo
         self._maze = self.create_grid()
         self.gen_maze()
         self._path = self.find_path()
@@ -104,7 +187,7 @@ class Maze:
             if not maze[d[key][0]][d[key][1]].available:
                 raise ConfigError(f"{key} cell inside of 42-logo")
 
-    def check_neighbours(self, current: tuple[int, int]) -> list[str]:
+    def check_unvis_neighbours(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze
         unvis_neighbours = []
         if (
@@ -128,6 +211,31 @@ class Maze:
         ):
             unvis_neighbours.append("W")
         return unvis_neighbours
+
+    def check_vis_neighbours(self, current: tuple[int, int]) -> list[str]:
+        maze = self._maze
+        vis_neighbours = []
+        if (
+            maze[current[0] - 1][current[1]].visited
+            and maze[current[0] - 1][current[1]].available
+        ):
+            vis_neighbours.append("N")
+        if (
+            maze[current[0]][current[1] + 1].visited
+            and maze[current[0]][current[1] + 1].available
+        ):
+            vis_neighbours.append("E")
+        if (
+            maze[current[0] + 1][current[1]].visited
+            and maze[current[0] + 1][current[1]].available
+        ):
+            vis_neighbours.append("S")
+        if (
+            maze[current[0]][current[1] - 1].visited
+            and maze[current[0]][current[1] - 1].available
+        ):
+            vis_neighbours.append("W")
+        return vis_neighbours
 
     def check_walls(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze
@@ -183,13 +291,19 @@ class Maze:
             current = (current[0], current[1] - 1)
         return current
 
-    def gen_perfect_maze(self) -> None:  # Algorithm: DFS with backtracking
+    def gen_perfect_maze(self) -> None:
+        if self._algo == "prim":
+            self.prim_maze_gen()
+        else:
+            self.dfs_maze_gen()
+
+    def dfs_maze_gen(self) -> None:
         maze = self._maze
         current = self._entry
         maze[current[0]][current[1]].visited = 1
         stack = []
         while True:
-            unvis_neighbours = self.check_neighbours(current)
+            unvis_neighbours = self.check_unvis_neighbours(current)
             if unvis_neighbours:
                 move = random.choice(unvis_neighbours)
                 stack.append(current)
@@ -200,6 +314,25 @@ class Maze:
                     current = stack.pop()
                 else:
                     break
+
+    def prim_maze_gen(self) -> None:
+        maze = self._maze
+        frontiers = []
+        current = self._entry
+        while True:
+            maze[current[0]][current[1]].visited = 1
+            unvis_neighbours = self.check_unvis_neighbours(current)
+            for move in unvis_neighbours:
+                new = self.move_to_next(current, move)
+                if new not in frontiers and not maze[new[0]][new[1]].visited:
+                    frontiers.append(new)
+            if not frontiers:
+                break
+            current = random.choice(frontiers)
+            frontiers.remove(current)
+            vis_neighbours = self.check_vis_neighbours(current)
+            move = random.choice(vis_neighbours)
+            self.move_to_next(current, move, 1)
 
     def gen_imperfect_maze(self) -> None:
         maze = self._maze
@@ -229,7 +362,7 @@ class Maze:
             if exit_found:
                 break
             current = queue.popleft()
-            unvis_neighbours = self.check_neighbours(current)
+            unvis_neighbours = self.check_unvis_neighbours(current)
             walls = self.check_walls(current)
             moves = set(unvis_neighbours).difference(walls)
             for move in moves:
