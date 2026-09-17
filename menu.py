@@ -1,7 +1,9 @@
 import sys
 
+from parsing import Config
 from maze import Maze
-from render import THEMES, fits_terminal, render, render_anima, CLEAR, HIDE_CURSOR, SHOW_CURSOR
+from render import (fits_terminal, render, render_anima,
+                    CLEAR, HIDE_CURSOR, SHOW_CURSOR)
 
 
 MENU_TEXT = """
@@ -19,7 +21,7 @@ def print_menu() -> None:
 
 def get_choice() -> int:
     """Prompt the user until a valid menu choice (1-4) is entered.
- 
+
     Returns:
         The chosen option as an integer between 1 and 4.
     """
@@ -30,16 +32,16 @@ def get_choice() -> int:
         print("Invalid choice, please enter a number between 1 and 4.")
 
 
-def run_menu(maze: Maze, maze_specs: dict, theme_names: list[str]) -> None:
+def run_menu(maze: Maze, maze_specs: Config, theme_names: list[str]) -> None:
     """Run the interactive terminal loop for viewing and manipulating a maze.
- 
+
     Renders the current maze (animating the solution path on
     first display), shows the menu, and dispatches the user's choice:
     regenerating the maze, toggling the shortest-path display, cycling
     through wall color themes, or quitting. The cursor is hidden while
     the menu is active and always restored on exit, even if an exception
     occurs.
- 
+
     Args:
         maze: The Maze instance currently being displayed.
         maze_specs: Config dict (as produced by parse_config) used to
@@ -59,13 +61,14 @@ def run_menu(maze: Maze, maze_specs: dict, theme_names: list[str]) -> None:
             sys.stdout.write(CLEAR)
             if not fits_terminal(maze):
                 print("Terminal window is too small to display this maze.")
-                print("Resize/maximize terminal, or use a smaller WIDTH/HEIGHT in config.")
+                print("Resize/maximize terminal, or use"
+                      "a smaller WIDTH/HEIGHT in config.")
             elif animate_new and show_path:
                 render_anima(maze, theme_name)
             else:
                 print(render(maze, theme_name, show_path))
             if maze._width < 11 or maze._height < 9:
-                print("\n(Maze too small for 42 logo)")     
+                print("\n(Maze too small for 42 logo)")
             print_menu()
             sys.stdout.write(SHOW_CURSOR)
             choice = get_choice()
