@@ -91,7 +91,7 @@ class Cell:
 
 class Maze:
     """
-    (....)
+    Represents the maze, its rows and columns of cells and other properties.
 
     Attributes:
         width, height : int
@@ -103,6 +103,16 @@ class Maze:
         perfect : bool
             True if the maze is perfect (exactly one path possible).
             False if the maze is imperfect (at least two paths, no dead-ends).
+        algo : str
+            "dfs" for using the Depth First Search algorithm (default).
+            "prim" for using Prim's algorithm.
+        maze : list[list[Cell]]
+            Every list in the list contains the cells of a row in the maze.
+        path : str
+            The shortest path from entry to exit, as a sequence of directions.
+            Example: "EEEESEENESEEEEENESENESSSSESSSSSESEESSWSESSSSSS".
+    
+    Methods:
         (...)
     """
 
@@ -126,6 +136,11 @@ class Maze:
         self._path = self.find_path()
 
     def __str__(self) -> str:
+        """_summary_
+
+        Returns:
+            str: _description_
+        """
         temp = []
         col_len = len(self._maze)
         for row in range(1, col_len - 1):
@@ -324,7 +339,7 @@ class Maze:
             unvis_neighbours = self.check_unvis_neighbours(current)
             for move in unvis_neighbours:
                 new = self.move_to_next(current, move)
-                if new not in frontiers and not maze[new[0]][new[1]].visited:
+                if new not in frontiers:
                     frontiers.append(new)
             if not frontiers:
                 break
