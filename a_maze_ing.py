@@ -18,7 +18,8 @@ def main() -> None:
                         maze_specs["HEIGHT"],
                         maze_specs["ENTRY"],
                         maze_specs["EXIT"],
-                        maze_specs["PERFECT"]
+                        maze_specs["PERFECT"],
+                        maze_specs["ALGORITHM"]
                     )
         except parsing.ConfigError as e:
             print(e)
