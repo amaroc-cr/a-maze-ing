@@ -100,12 +100,15 @@ class Maze:
         entry, exit : tuple[int, int]
             The entry and exit of the maze.
             Format: (y, x)
-        perfect : bool
+        _perfect : bool
             True if the maze is perfect (exactly one path possible).
             False if the maze is imperfect (at least two paths, no dead-ends).
-        algo : str
+        _algo : str
             "dfs" for using the Depth First Search algorithm (default).
             "prim" for using Prim's algorithm.
+        _rng : Random
+            Random number generator that uses the seed, if specified.
+            If no seed, it is an unreproducable random number generator.
         maze : list[list[Cell]]
             Every list in the list contains the cells of a row in the maze.
         path : str
@@ -159,7 +162,8 @@ class Maze:
             entry: tuple[int, int],  # (x,y)
             exit: tuple[int, int],  # (x,y)
             perfect: bool,
-            algo: str = "dfs"
+            algo: str = "dfs",
+            seed: str | None = None
     ):
         self.width = width + 2
         self.height = height + 2
@@ -167,6 +171,7 @@ class Maze:
         self.exit = (exit[1] + 1, exit[0] + 1)
         self._perfect = perfect
         self._algo = algo
+        self._rng = random.Random(seed)
         self.maze = self.create_grid()
         self.gen_maze()
         self.path = self.find_path()
@@ -440,7 +445,7 @@ class Maze:
         while True:
             unvis_neighbours = self.check_unvis_neighbours(current)
             if unvis_neighbours:
-                move = random.choice(unvis_neighbours)
+                move = self._rng.choice(unvis_neighbours)
                 stack.append(current)
                 current = self.move_to_next(current, move, 1)
                 maze[current[0]][current[1]].visited = 1
@@ -469,10 +474,10 @@ class Maze:
                     frontiers.append(new)
             if not frontiers:
                 break
-            current = random.choice(frontiers)
+            current = self._rng.choice(frontiers)
             frontiers.remove(current)
             vis_neighbours = self.check_vis_neighbours(current)
-            move = random.choice(vis_neighbours)
+            move = self._rng.choice(vis_neighbours)
             self.move_to_next(current, move, 1)
 
     def gen_imperfect_maze(self) -> None:
@@ -488,7 +493,7 @@ class Maze:
                 if maze[i][j].available and maze[i][j].dead_end():
                     walls = self.check_walls((i, j))
                     if walls:
-                        move = random.choice(walls)
+                        move = self._rng.choice(walls)
                         self.move_to_next((i, j), move, 1)
 
     def reset_maze(self) -> None:

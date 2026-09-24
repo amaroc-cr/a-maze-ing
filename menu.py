@@ -80,7 +80,8 @@ def run_menu(maze: Maze, maze_specs: Config, theme_names: list[str]) -> None:
                     maze_specs["HEIGHT"],
                     maze_specs["ENTRY"],
                     maze_specs["EXIT"],
-                    maze_specs["PERFECT"]
+                    maze_specs["PERFECT"],
+                    maze_specs["ALGORITHM"]
                 )
                 with open(maze_specs["OUTPUT_FILE"], "w") as f:
                     f.write(str(maze))
