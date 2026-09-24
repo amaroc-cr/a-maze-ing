@@ -161,15 +161,15 @@ class Maze:
             perfect: bool,
             algo: str = "dfs"
     ):
-        self._width = width + 2
-        self._height = height + 2
-        self._entry = (entry[1] + 1, entry[0] + 1)
-        self._exit = (exit[1] + 1, exit[0] + 1)
+        self.width = width + 2
+        self.height = height + 2
+        self.entry = (entry[1] + 1, entry[0] + 1)
+        self.exit = (exit[1] + 1, exit[0] + 1)
         self._perfect = perfect
         self._algo = algo
-        self._maze = self.create_grid()
+        self.maze = self.create_grid()
         self.gen_maze()
-        self._path = self.find_path()
+        self.path = self.find_path()
 
     def __str__(self) -> str:
         """
@@ -182,14 +182,14 @@ class Maze:
             str: The maze, entry, exit and path, as written to the file.
         """
         temp = []
-        col_len = len(self._maze)
+        col_len = len(self.maze)
         for row in range(1, col_len - 1):
-            for cell in self._maze[row][1:-1]:
+            for cell in self.maze[row][1:-1]:
                 temp.append(str(cell))
             temp.append("\n")
-        temp.append(f"\n{self._entry[1] - 1},{self._entry[0] - 1}\n")
-        temp.append(f"{self._exit[1] - 1},{self._exit[0] - 1}\n")
-        temp.append(f"{self._path}\n")
+        temp.append(f"\n{self.entry[1] - 1},{self.entry[0] - 1}\n")
+        temp.append(f"{self.exit[1] - 1},{self.exit[0] - 1}\n")
+        temp.append(f"{self.path}\n")
         s = "".join(temp)
         return s
 
@@ -201,9 +201,9 @@ class Maze:
             list[list[Cell]]: Every list contains the cells of one row.
         """
         maze = []
-        for i in range(self._height):
+        for i in range(self.height):
             row = []
-            for j in range(self._width):
+            for j in range(self.width):
                 row.append(Cell(i, j))
             maze.append(row)
         return maze
@@ -215,7 +215,7 @@ class Maze:
         then the maze is generated around them.
         """
         self.gen_outer_circle()
-        if self._width >= 11 and self._height >= 9:
+        if self.width >= 11 and self.height >= 9:
             self.gen_fourtytwo()
         if self._perfect:
             self.gen_perfect_maze()
@@ -230,7 +230,7 @@ class Maze:
         Args:
             current (tuple[int, int]): Coordinates of the cell. Format: (y, x)
         """
-        maze = self._maze
+        maze = self.maze
         maze[current[0]][current[1]].visited = 1
         maze[current[0]][current[1]].available = 0
 
@@ -240,12 +240,12 @@ class Maze:
         This border is not part of the maze itself. It exists so that every
         cell of the maze has four neighbours to look at.
         """
-        for i in range(self._height):
+        for i in range(self.height):
             self.make_unavailable((i, 0))
-            self.make_unavailable((i, self._width - 1))
-        for i in range(self._width):
+            self.make_unavailable((i, self.width - 1))
+        for i in range(self.width):
             self.make_unavailable((0, i))
-            self.make_unavailable((self._height - 1, i))
+            self.make_unavailable((self.height - 1, i))
 
     def gen_fourtytwo(self) -> None:
         """
@@ -256,8 +256,8 @@ class Maze:
         Raises:
             ConfigError: If the entry or the exit lies inside the logo.
         """
-        maze = self._maze
-        middle = (int(self._height / 2), int(self._width / 2))
+        maze = self.maze
+        middle = (int(self.height / 2), int(self.width / 2))
         start_4 = (middle[0] - 2, middle[1] - 3)
         path_4 = "SSEESS"
         start_2 = (middle[0] - 2, middle[1] + 1)
@@ -268,7 +268,7 @@ class Maze:
             for move in number[1]:
                 current = self.move_to_next(current, move)
                 self.make_unavailable(current)
-        d = {"Entry": self._entry, "Exit": self._exit}
+        d = {"Entry": self.entry, "Exit": self.exit}
         for key in d:
             if not maze[d[key][0]][d[key][1]].available:
                 raise ConfigError(f"{key} cell inside of 42-logo")
@@ -282,7 +282,7 @@ class Maze:
         Returns:
             list[str]: The directions, as "N", "E", "S" and/or "W".
         """
-        maze = self._maze
+        maze = self.maze
         unvis_neighbours = []
         if (
             not maze[current[0] - 1][current[1]].visited
@@ -315,7 +315,7 @@ class Maze:
         Returns:
             list[str]: The directions, as "N", "E", "S" and/or "W".
         """
-        maze = self._maze
+        maze = self.maze
         vis_neighbours = []
         if (
             maze[current[0] - 1][current[1]].visited
@@ -350,7 +350,7 @@ class Maze:
         Returns:
             list[str]: The directions, as "N", "E", "S" and/or "W".
         """
-        maze = self._maze
+        maze = self.maze
         walls = []
         if (
             maze[current[0]][current[1]].n
@@ -392,7 +392,7 @@ class Maze:
         Returns:
             tuple[int, int]: Coordinates of the neighbour. Format: (y, x)
         """
-        maze = self._maze
+        maze = self.maze
         if move == "N":
             if break_wall:
                 maze[current[0]][current[1]].n = 0
@@ -433,8 +433,8 @@ class Maze:
         it backtracks over the stack of earlier visited cells until it
         finds one with unvisited neighbours.
         """
-        maze = self._maze
-        current = self._entry
+        maze = self.maze
+        current = self.entry
         maze[current[0]][current[1]].visited = 1
         stack = []
         while True:
@@ -457,9 +457,9 @@ class Maze:
         Starting from the entry, a random frontier cell is picked randomly
         and connects it to one of its neighbours that is already in the maze.
         """
-        maze = self._maze
+        maze = self.maze
         frontiers = []
-        current = self._entry
+        current = self.entry
         while True:
             maze[current[0]][current[1]].visited = 1
             unvis_neighbours = self.check_unvis_neighbours(current)
@@ -481,10 +481,10 @@ class Maze:
         First a perfect maze is generated. Then at every dead end one wall
         is opened, which removes the dead end and adds a loop.
         """
-        maze = self._maze
+        maze = self.maze
         self.gen_perfect_maze()
-        for i in range(1, self._height - 1):
-            for j in range(1, self._width - 1):
+        for i in range(1, self.height - 1):
+            for j in range(1, self.width - 1):
                 if maze[i][j].available and maze[i][j].dead_end():
                     walls = self.check_walls((i, j))
                     if walls:
@@ -496,9 +496,9 @@ class Maze:
         Sets every cell back to unvisited, so the maze can be searched again
         after it has been generated.
         """
-        maze = self._maze
-        for i in range(self._height):
-            for j in range(self._width):
+        maze = self.maze
+        for i in range(self.height):
+            for j in range(self.width):
                 maze[i][j].visited = 0
 
     def bfs_to_exit(self) -> None:
@@ -508,8 +508,8 @@ class Maze:
         Each cell stores the direction it was reached from in move_to_cell,
         so the path can be retraced afterwards.
         """
-        maze = self._maze
-        start = self._entry
+        maze = self.maze
+        start = self.entry
         maze[start[0]][start[1]].visited = 1
         exit_found = False
         queue: deque[tuple[int, int]] = deque()
@@ -525,7 +525,7 @@ class Maze:
                 nxt = self.move_to_next(current, move)
                 maze[nxt[0]][nxt[1]].visited = 1
                 maze[nxt[0]][nxt[1]].move_to_cell = move
-                if self._exit == nxt:
+                if self.exit == nxt:
                     exit_found = True
                 queue.append(nxt)
 
@@ -539,10 +539,10 @@ class Maze:
         Returns:
             str: The path, as a sequence of "N", "E", "S" and "W".
         """
-        maze = self._maze
-        current = self._exit
+        maze = self.maze
+        current = self.exit
         path = []
-        while current != self._entry:
+        while current != self.entry:
             move = maze[current[0]][current[1]].move_to_cell
             path.append(move)
             if move == "N":

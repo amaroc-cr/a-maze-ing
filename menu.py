@@ -67,7 +67,7 @@ def run_menu(maze: Maze, maze_specs: Config, theme_names: list[str]) -> None:
                 render_anima(maze, theme_name)
             else:
                 print(render(maze, theme_name, show_path))
-            if maze._width < 11 or maze._height < 9:
+            if maze.width < 11 or maze.height < 9:
                 print("\n(Maze too small for 42 logo)")
             print_menu()
             sys.stdout.write(SHOW_CURSOR)
