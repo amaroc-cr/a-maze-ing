@@ -1,2 +1,4 @@
 __pycache__/
 color.py
+config.text
+maze.txt

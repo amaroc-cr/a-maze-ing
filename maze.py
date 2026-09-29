@@ -1,6 +1,9 @@
 import random
 from collections import deque
-from parsing import ConfigError
+
+
+class MazeGenError(Exception):
+    """Raised when the maze cannot be generated with the given parameters."""
 
 
 class Cell:
@@ -115,12 +118,14 @@ class Maze:
             perfect: bool,
             algo: str = "dfs"
     ):
+        self._validate_params(width, height, entry, exit, perfect, algo, seed)
         self._width = width + 2
         self._height = height + 2
         self._entry = (entry[1] + 1, entry[0] + 1)
         self._exit = (exit[1] + 1, exit[0] + 1)
         self._perfect = perfect
         self._algo = algo
+        
         self._maze = self.create_grid()
         self.gen_maze()
         self._path = self.find_path()
@@ -137,6 +142,46 @@ class Maze:
         temp.append(f"{self._path}\n")
         s = "".join(temp)
         return s
+
+    @staticmethod
+    def _validate_params(
+        width: int,
+        height: int,
+        entry: tuple[int, int],
+        exit: tuple[int, int],
+        perfect: bool,
+        algo: str,
+        seed: str | None,
+        ) -> None:
+        if not isinstance(width, int) or width <= 0:
+            raise MazeGenError(f"width must be a positive integer, got {width!r}")
+        if not isinstance(height, int) or height <= 0:
+            raise MazeGenError(f"height must be a positive int, got {height!r}")
+        if width < 3 or height < 3:
+            raise MazeGenError("width and height must be at least 3")
+
+        for name, coord in (("entry", entry), ("exit", exit)):
+            if (
+                not isinstance(coord, tuple)
+                or len(coord) != 2
+                or not all(isinstance(v, int) for v in coord)
+            ):
+                raise MazeGenError(f"{name} must be a tuple of two ints, got {coord!r}")
+            x, y = coord
+            if not (0 <= x < width) or not (0 <= y < height):
+                raise MazeGenError(f"{name} {coord} is outside the maze bounds")
+
+        if entry == exit:
+            raise MazeGenError("entry and exit cannot be the same")
+
+        if not isinstance(perfect, bool):
+            raise MazeGenError(f"perfect must be a bool, got {perfect!r}")
+
+        if algo not in ("dfs", "prim"):
+            raise MazeGenError(f"unknown algo {algo!r}, expected 'dfs' or 'prim'")
+
+        if seed is not None and not isinstance(seed, str):
+            raise MazeGenError(f"seed must be an int or None, got {seed!r}")
 
     def create_grid(self) -> list[list[Cell]]:
         maze = []
@@ -185,7 +230,7 @@ class Maze:
         d = {"Entry": self._entry, "Exit": self._exit}
         for key in d:
             if not maze[d[key][0]][d[key][1]].available:
-                raise ConfigError(f"{key} cell inside of 42-logo")
+                raise MazeGenError(f"{key} cell inside of 42-logo")
 
     def check_unvis_neighbours(self, current: tuple[int, int]) -> list[str]:
         maze = self._maze

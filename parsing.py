@@ -8,7 +8,7 @@ VALID_ALGORITHMS = {"dfs", "prim"}
 
 
 class ConfigError(Exception):
-    pass
+    """Raised when Config file is formatted wrongly"""
 
 
 class Config(TypedDict):
