@@ -28,6 +28,7 @@ The following keys are required:
 | `EXIT` | Exit coordinates, as `x,y` | `EXIT=19,14` |
 | `OUTPUT_FILE` | Name of the file to write the maze to | `OUTPUT_FILE=maze.txt` |
 | `PERFECT` | Generate a perfect maze rather than a playable board | `PERFECT=True` |
+| `ALGORITHM` | Algorithm used for maze generation | `ALGORITHM=prim` |
 
 Coordinates are zero-based and count from the top-left cell, so the bottom-right
 cell of a 20×15 maze is `19,14`. Entry and exit must be distinct and must both
