@@ -2,7 +2,7 @@ import sys
 from typing import TypedDict
 
 MANDATORY_KEYS = {"WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"}
-OPTIONAL_KEYS = {"ALGORITHM"}
+OPTIONAL_KEYS = {"ALGORITHM", "SEED"}
 ALL_KEYS = MANDATORY_KEYS | OPTIONAL_KEYS
 VALID_ALGORITHMS = {"dfs", "prim"}
 
@@ -19,6 +19,7 @@ class Config(TypedDict):
     OUTPUT_FILE: str
     PERFECT: bool
     ALGORITHM: str
+    SEED: str | None
 
 
 def parse_config(path: str) -> Config:
@@ -98,7 +99,8 @@ def parse_config(path: str) -> Config:
         "EXIT": parse_coord(raw["EXIT"], "EXIT", width, height),
         "OUTPUT_FILE": raw["OUTPUT_FILE"],
         "PERFECT": parse_bool(raw["PERFECT"], "PERFECT"),
-        "ALGORITHM": parse_algorithm(raw.get("ALGORITHM", "dfs"))
+        "ALGORITHM": parse_algorithm(raw.get("ALGORITHM", "dfs")),
+        "SEED": raw.get("SEED"),
     }
 
     if config["ENTRY"] == config["EXIT"]:

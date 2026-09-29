@@ -1,7 +1,7 @@
 import sys
 
 from parsing import Config
-from maze import Maze
+from src.maze import Maze
 from render import (fits_terminal, render, render_anima,
                     CLEAR, HIDE_CURSOR, SHOW_CURSOR)
 
