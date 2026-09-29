@@ -10,8 +10,6 @@ Alongside the file output, the program renders the maze in the terminal, letting
 
 # Instructions
 
-(containing any relevant information about compilation, installation, and/or execution)
-
 ### Configuration file
 
 The generator is driven by a plain-text configuration file, passed as the only
@@ -33,17 +31,34 @@ Coordinates are zero-based and count from the top-left cell, so the bottom-right
 cell of a 20×15 maze is `19,14`. Entry and exit must be distinct and must both
 lie inside the maze.
 
+Additionally, there are also two optional keys you can add:
+
+| Key | Description | Example |
+|---|---|---|
+| `ALGORITHM` | Algorithm used for maze generation | `ALGORITHM=prim` |
+| `SEED` | Seed for reproducing a maze | `SEED=42` |
+
 A working example is included in the repository as `config.txt`.
-
-
-(Optional keys: SEED for reproducible output, ...)
 
 # Design choices
 
-### Algorithm(s)
+### Algorithms
 
-(• The maze generation algorithm you chose.
-• Why you chose this algorithm.)
+#### Depth-First Search with backtracking
+
+As our main algorithm, we chose a Depth-First Search algorithm with backtracking. Starting from the entry cell, it repeatedly picks a random unvisited neighbour, opens the wall between the two cells and moves there, carving a corridor as it goes. Every cell it moves away from is pushed onto a stack. When it reaches a cell with no unvisited neighbours left, it pops cells off that stack until it finds one that still has an unvisited neighbour, and continues from there. The maze is finished once the stack is empty, which means every reachable cell has been visited exactly once. Because no cell is ever entered twice, there is exactly one route between any two cells.
+
+We chose DFS because it creates the most varied and best looking maze. The paths are long and winding, which makes for a good maze. Also, the algorithm also doesn't have a bias towards a certain direction.
+
+#### Sidewinder's (not implemented)
+
+As our second algorithm, we first tried to implement the Sidewinder algorithm, because we thought it would be interesting to also use an algorithm that is completely different than DFS. Unfortunately, the Sidewinder algorithm turned out to be incompatible with the 42-logo in the middle of the maze, because there are cells that have no valid northern neighbour to connect to. In addition, one of the cells in the '2' doesn't have a valid eastern neighbour.
+
+#### Prim's
+
+In the end we chose to implement Prim's algorithm as our second algorithm. It keeps a list of frontier cells: the unvisited cells that border the part of the maze built so far. Starting from the entry, it adds that cell's unvisited neighbours to the frontier, then picks one frontier cell at random, and connects it to a randomly chosen neighbour that is already part of the maze by opening the wall between them. The new cell is then marked as visited and its own unvisited neighbours join the frontier. This repeats until the frontier is empty. Because every cell is attached to the maze exactly once, by a single wall, the result is again a maze with exactly one route between any two cells.
+
+We chose Prim's, because the maze it creates looks different than a DFS maze, but it's also very usable as a maze and doesn't have a bias towards a certain direction.
 
 ### Reusability
 
@@ -68,5 +83,5 @@ A working example is included in the repository as `config.txt`.
 
 We only used AI while explicitly stating that we didn't want the right answer, but we just wanted a nudge in the right direction.
 
-We used AI to brainstorm about pros and cons of different datastructures to use for the maze and cells and also for some help while debugging.
-Some first drafts for paragraphs for this README were also written using AI.
+We used AI to brainstorm about pros and cons of different datastructures to use for the maze and cells and also for some help while debugging and for git advice.
+The first drafts of some paragraphs of this README were also written using AI.
