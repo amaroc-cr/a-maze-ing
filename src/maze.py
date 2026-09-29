@@ -240,7 +240,7 @@ class Maze:
             raise MazeGenError(f"unknown algo {algo!r}, expected 'dfs' or 'prim'")
 
         if seed is not None and not isinstance(seed, str):
-            raise MazeGenError(f"seed must be an int or None, got {seed!r}")
+            raise MazeGenError(f"seed must be a str or None, got {seed!r}")
 
     def create_grid(self) -> list[list[Cell]]:
         """

@@ -11,4 +11,5 @@
     OUTPUT_FILE=maze.txt
     PERFECT=False
 
+
     algorithm = prim
