@@ -1,7 +1,7 @@
 import sys
 import parsing
 
-from maze import Maze
+from src.maze import Maze
 from render import THEMES
 from menu import run_menu
 
