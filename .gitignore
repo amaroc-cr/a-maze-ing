@@ -1,4 +1,3 @@
 __pycache__/
 color.py
-config.text
-maze.txt
+maze_analyzer.py

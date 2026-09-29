@@ -48,8 +48,8 @@ def rendered_size(maze: Maze) -> tuple[int, int]:
         A (rows, cols) tuple of the terminal size required to render
         the maze without clipping.
     """
-    height = (maze._height - 2) * 2 + 1
-    width = ((maze._width - 2) * 2 + 1) * 2
+    height = (maze.height - 2) * 2 + 1
+    width = ((maze.width - 2) * 2 + 1) * 2
     return height, width
 
 
@@ -112,8 +112,8 @@ def draw_grid(maze: Maze, theme: Theme) -> Grid:
     Returns:
         A 2D grid of (rgb, text) pixels ready to be turned into strings.
     """
-    W = maze._width - 2
-    H = maze._height - 2
+    W = maze.width - 2
+    H = maze.height - 2
     grid = (
         [[(theme["floor"], "  ") for _ in range(W * 2 + 1)]
          for _ in range(H * 2 + 1)]
@@ -121,7 +121,7 @@ def draw_grid(maze: Maze, theme: Theme) -> Grid:
 
     for row in range(H):
         for col in range(W):
-            cell = maze._maze[row + 1][col + 1]
+            cell = maze.maze[row + 1][col + 1]
             gr, gc = row * 2 + 1, col * 2 + 1
 
             # corners
@@ -141,8 +141,8 @@ def draw_grid(maze: Maze, theme: Theme) -> Grid:
                 grid[gr][gc + 1] = (theme["wall"], "  ")
 
     # entry and exit
-    entry_r, entry_c = maze._entry[0] - 1, maze._entry[1] - 1
-    exit_r, exit_c = maze._exit[0] - 1, maze._exit[1] - 1
+    entry_r, entry_c = maze.entry[0] - 1, maze.entry[1] - 1
+    exit_r, exit_c = maze.exit[0] - 1, maze.exit[1] - 1
 
     grid[entry_r * 2 + 1][entry_c * 2 + 1] = (theme["entry"], "  ")
     grid[exit_r * 2 + 1][exit_c * 2 + 1] = (theme["exit"], "  ")
@@ -153,7 +153,7 @@ def draw_grid(maze: Maze, theme: Theme) -> Grid:
 def path_cells(maze: Maze) -> list[tuple[int, int]]:
     """Compute the interior (row, col) cells along the maze's solution path.
 
-    Walks maze._path (a sequence of "N"/"S"/"E"/"W" moves) starting from
+    Walks maze.path (a sequence of "N"/"S"/"E"/"W" moves) starting from
     the entry cell, converting each visited cell to 0-based coordinates
     relative to the maze interior (i.e. excluding the outer border).
     The entry and exit cells themselves are excluded from the result.
@@ -166,12 +166,12 @@ def path_cells(maze: Maze) -> list[tuple[int, int]]:
         A list of (row, col) interior coordinates for each cell on the
         path between (but not including) entry and exit.
     """
-    if not maze._path:
+    if not maze.path:
         return []
 
-    row, col = maze._entry
+    row, col = maze.entry
     cells = [(row - 1, col - 1)]
-    for move in maze._path:
+    for move in maze.path:
         if move == "N":
             row -= 1
         elif move == "S":
