@@ -10,7 +10,7 @@ Alongside the file output, the program renders the maze in the terminal, letting
 
 # Instructions
 
-### Configuration file
+## Configuration file
 
 The generator is driven by a plain-text configuration file, passed as the only
 argument. Each line holds a single `KEY=VALUE` pair; lines beginning with `#`
@@ -40,6 +40,156 @@ Additionally, there are also two optional keys you can add:
 
 A working example is included in the repository as `config.txt`.
 
+
+## Running the program
+
+### Prerequisites
+
+- Python 3.11 or later
+- `make`
+
+### Setup
+
+```bash
+make install
+```
+
+This creates a virtual environment (`venv/`) and installs all dependencies,
+including the `mazegen` package itself (in editable mode).
+
+### Run
+
+```bash
+make run
+```
+
+This runs `a_maze_ing.py` with `config.txt` as the configuration file. To use
+a different configuration file, run the program directly instead:
+
+```bash
+venv/bin/python3 a_maze_ing.py <path-to-your-config-file>
+```
+
+The maze is generated and written to the file named by `OUTPUT_FILE` in the
+configuration, then an interactive menu opens in the terminal:
+
+```
+1. Re-generate maze
+2. Show/hide shortest path
+3. Rotate wall colors
+4. Quit
+```
+
+- **Re-generate maze** builds a new random maze from the same configuration
+  and overwrites the output file.
+- **Show/hide shortest path** toggles the highlighted solution path.
+- **Rotate wall colors** cycles through the available color themes.
+- **Quit** exits the program.
+
+### Other commands
+
+```bash
+make lint    # run flake8 and mypy
+make debug   # run the program under pdb
+make build   # build the mazegen package (.whl and .tar.gz)
+make clean   # remove caches and build artifacts
+```
+
+
+## mazegen — reusable maze generator module
+
+`mazegen` is a standalone, pip-installable package that generates a maze
+and computes its shortest path from entry to exit. It has no dependency
+on the rest of this repository and can be reused in any future project.
+
+### Installation
+
+From a built wheel:
+```bash
+pip install mazegen-1.0.0-py3-none-any.whl
+```
+
+Or, for local development (editable install):
+```bash
+pip install -e .
+```
+
+### Basic usage
+
+```python
+from mazegen import Maze
+
+maze = Maze(
+    width=20,
+    height=15,
+    entry=(0, 0),
+    exit=(19, 14),
+    perfect=True,
+)
+
+print(maze.path)  # e.g. "EESSWWSSEE..."
+```
+
+### Custom parameters
+
+| Parameter | Type              | Default | Description |
+|-----------|-------------------|---------|-------------|
+| `width`   | `int`             | —       | Maze width in cells (0-based, excludes the automatic outer border) |
+| `height`  | `int`             | —       | Maze height in cells |
+| `entry`   | `tuple[int, int]` | —       | Entry coordinate as `(x, y)`, zero-based |
+| `exit`    | `tuple[int, int]` | —       | Exit coordinate as `(x, y)`, zero-based, must differ from `entry` |
+| `perfect` | `bool`            | —       | `True` for exactly one path (no loops); `False` for loops and no dead ends |
+| `algo`    | `str`             | `"dfs"` | `"dfs"` or `"prim"` — algorithm used to generate a perfect maze |
+| `seed`    | `str \| None`     | `None`  | Pass the same seed to reproduce the same maze; omit for a random maze |
+
+```python
+maze = Maze(
+    width=10,
+    height=10,
+    entry=(0, 0),
+    exit=(9, 9),
+    perfect=False,
+    algo="prim",
+    seed="my-seed-42",   # same seed -> same maze every time
+)
+```
+
+### Accessing the generated structure
+
+- `maze.maze` — a `list[list[Cell]]`, the 2D grid of `Cell` objects
+  (indexed `[row][col]`). Each `Cell` has `.n`, `.e`, `.s`, `.w`
+  (`1` = wall present, `0` = no wall), `.visited`, `.available`.
+- `maze.width`, `maze.height` — the internal grid size, including the
+  1-cell unavailable border automatically added around the maze
+  (so this is your requested `width`/`height` + 2).
+- `maze.entry`, `maze.exit` — the entry/exit coordinates as stored
+  internally, in `(row, col)` order and offset by the outer border.
+  These are not the same tuple you passed in.
+
+### Accessing the solution
+
+- `maze.path` — a `str`, the shortest path from entry to exit as a
+  sequence of `"N"`/`"E"`/`"S"`/`"W"` moves, e.g. `"EESSWWSSEE"`.
+- `str(maze)` — the full maze in the project's output file format
+  (hexadecimal wall encoding, one row per line, followed by entry,
+  exit and the solution path).
+
+### Error handling
+
+```python
+from mazegen import Maze, MazeGenError
+
+try:
+    maze = Maze(width=5, height=5, entry=(0, 0), exit=(0, 0), perfect=True)
+except MazeGenError as e:
+    print(f"Could not generate maze: {e}")
+```
+
+`MazeGenError` is raised for invalid parameters (bad size, out-of-bounds
+or identical entry/exit, unknown algorithm, wrong types) and for
+unsolvable layouts (e.g. entry/exit landing inside the "42" logo).
+
+
 # Design choices
 
 ### Algorithms
@@ -66,11 +216,38 @@ We chose Prim's, because the maze it creates looks different than a DFS maze, bu
 
 # Process and collaboration
 
-(• Your team and project management with:
-◦ The roles of each team member. (L: designing datastructure for maze and cells, generation of the perfect and imperfect maze, conversion to hexadecimal representation in file, algorithm for finding the shortest path) (Y: parsing of configuration file, visual representation in terminal)
-◦ Your anticipated planning and how it evolved until the end (start, basic algorithm and structure, parsing and rendering was way faster than imagined. Options in input menu harder than expected? reusability?)
-◦ What worked well and what could be improved (collaboration worked well, different tasks that were pretty well separable)
-◦ Have you used any specific tools? Which ones? (???))
+◦ The roles of each team member.
+- **lvan-der**: Designed the data structure for the maze and its cells; implemented
+  generation of both perfect and imperfect mazes; implemented conversion to
+  the hexadecimal wall-encoding file format; implemented the shortest-path
+  algorithm.
+- **yuhma**: Implemented configuration file parsing and validation; implemented
+  the terminal visual representation (rendering, color themes, path
+  animation); packaged the maze generator as the standalone, pip-installable
+  `mazegen` module (parameter validation, module documentation, build
+  configuration, and license).
+
+◦ Your anticipated planning and how it evolved until the end 
+- start, basic algorithm and structure, parsing and rendering was way faster than imagined. Options in input menu harder than expected. Reusable worked smoothly as it fitted our design process
+
+◦ What worked well and what could be improved
+- collaboration worked well, different tasks that were pretty well separable and we were both interested in doing our parts!
+- time frame could have been planned better
+
+◦ Have you used any specific tools? Which ones?
+### Tools used
+
+- **Git & GitHub** — version control, feature branches, pull requests for
+  code review before merging into `main`.
+- **flake8** — enforces PEP 8 style and catches common code issues.
+- **mypy** — static type checking, using type hints throughout the codebase.
+- **Pylance** — in-editor type checking and autocomplete (VS Code).
+- **pytest** — unit testing.
+- **Make** — automates environment setup (`make install`), running the
+  program (`make run`), linting (`make lint`), and building the `mazegen`
+  package (`make build`).
+- **setuptools / build** — builds the `mazegen` package into a distributable
+  wheel (`.whl`) and source distribution (`.tar.gz`).
 
 # Resources
 
