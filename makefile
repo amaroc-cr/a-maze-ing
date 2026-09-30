@@ -11,12 +11,15 @@ $(VENV)/bin/activate: requirements.txt pyproject.toml
 	$(PIP) install -r requirements.txt
 	touch $(VENV)/bin/activate
 
+build: install
+	$(PYTHON) -m build
+	cp dist/mazegen-*.whl dist/mazegen-*.tar.gz .
+
 run: install
 	python3 a_maze_ing.py config.txt
 
 debug: install
 	python3 -m pdb a_maze_ing.py config.txt
-
 
 lint: install
 	flake8 .

@@ -19,8 +19,8 @@ def main() -> None:
                         maze_specs["ENTRY"],
                         maze_specs["EXIT"],
                         maze_specs["PERFECT"],
-                        maze_specs["ALGORITHM"]
-                        maze_specs["SEED"]
+                        maze_specs["ALGORITHM"],
+                        maze_specs["SEED"],
                     )
         except (MazeGenError, parsing.ConfigError) as e:
             print(e)

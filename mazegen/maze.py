@@ -211,11 +211,13 @@ class Maze:
         perfect: bool,
         algo: str,
         seed: str | None,
-        ) -> None:
+    ) -> None:
         if not isinstance(width, int) or width <= 0:
-            raise MazeGenError(f"width must be a positive integer, got {width!r}")
+            raise MazeGenError(f"width must be a positive integer, "
+                               f"got {width!r}")
         if not isinstance(height, int) or height <= 0:
-            raise MazeGenError(f"height must be a positive int, got {height!r}")
+            raise MazeGenError(f"height must be a positive int, "
+                               f"got {height!r}")
         if width < 3 or height < 3:
             raise MazeGenError("width and height must be at least 3")
 
@@ -225,10 +227,12 @@ class Maze:
                 or len(coord) != 2
                 or not all(isinstance(v, int) for v in coord)
             ):
-                raise MazeGenError(f"{name} must be a tuple of two ints, got {coord!r}")
+                raise MazeGenError(f"{name} must be a tuple of two ints, "
+                                   f"got {coord!r}")
             x, y = coord
             if not (0 <= x < width) or not (0 <= y < height):
-                raise MazeGenError(f"{name} {coord} is outside the maze bounds")
+                raise MazeGenError(f"{name} {coord} is "
+                                   f"outside the maze bounds")
 
         if entry == exit:
             raise MazeGenError("entry and exit cannot be the same")
@@ -237,7 +241,8 @@ class Maze:
             raise MazeGenError(f"perfect must be a bool, got {perfect!r}")
 
         if algo not in ("dfs", "prim"):
-            raise MazeGenError(f"unknown algo {algo!r}, expected 'dfs' or 'prim'")
+            raise MazeGenError(f"unknown algo {algo!r}, "
+                               f"expected 'dfs' or 'prim'")
 
         if seed is not None and not isinstance(seed, str):
             raise MazeGenError(f"seed must be a str or None, got {seed!r}")
