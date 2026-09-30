@@ -1,7 +1,7 @@
 import sys
 import parsing
 
-from src.maze import Maze
+from mazegen import Maze, MazeGenError
 from render import THEMES
 from menu import run_menu
 
@@ -20,8 +20,9 @@ def main() -> None:
                         maze_specs["EXIT"],
                         maze_specs["PERFECT"],
                         maze_specs["ALGORITHM"]
+                        maze_specs["SEED"]
                     )
-        except parsing.ConfigError as e:
+        except (MazeGenError, parsing.ConfigError) as e:
             print(e)
             sys.exit(1)
         output_file = maze_specs["OUTPUT_FILE"]

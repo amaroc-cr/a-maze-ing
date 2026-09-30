@@ -1,7 +1,7 @@
 import sys
 
 from parsing import Config
-from src.maze import Maze
+from mazegen import Maze
 from render import (fits_terminal, render, render_anima,
                     CLEAR, HIDE_CURSOR, SHOW_CURSOR)
 
@@ -75,16 +75,21 @@ def run_menu(maze: Maze, maze_specs: Config, theme_names: list[str]) -> None:
             animate_new = False
 
             if choice == 1:
-                maze = Maze(
-                    maze_specs["WIDTH"],
-                    maze_specs["HEIGHT"],
-                    maze_specs["ENTRY"],
-                    maze_specs["EXIT"],
-                    maze_specs["PERFECT"],
-                    maze_specs["ALGORITHM"]
-                )
-                with open(maze_specs["OUTPUT_FILE"], "w") as f:
-                    f.write(str(maze))
+                try:
+                    maze = Maze(
+                        maze_specs["WIDTH"],
+                        maze_specs["HEIGHT"],
+                        maze_specs["ENTRY"],
+                        maze_specs["EXIT"],
+                        maze_specs["PERFECT"],
+                        maze_specs["ALGORITHM"],
+                        seed=None
+                    )
+                    with open(maze_specs["OUTPUT_FILE"], "w") as f:
+                        f.write(str(maze))
+                except OSError as e:
+                    print(e)
+                    continue
                 animate_new = True
             elif choice == 2:
                 show_path = not show_path

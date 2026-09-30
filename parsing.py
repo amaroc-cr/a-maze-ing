@@ -12,7 +12,7 @@ class ConfigError(Exception):
 
 
 class Config(TypedDict):
-    WIDTH: int
+    WIDTH: int 
     HEIGHT: int
     ENTRY: tuple[int, int]
     EXIT: tuple[int, int]
@@ -63,8 +63,8 @@ def parse_config(path: str) -> Config:
             continue
 
         if line.count("=") != 1:
-            raise ConfigError(f"Line {lineno}: \
-                              expected one '=', got: {line!r}")
+            raise ConfigError(f"Line {lineno}: "
+                              "expected one '=', got: {line!r}")
 
         key, value = line.split("=", 1)
         key = key.strip().upper()
@@ -81,13 +81,13 @@ def parse_config(path: str) -> Config:
     # AFTER validating widthe and height!
     missing = MANDATORY_KEYS - raw.keys()
     if missing:
-        raise ConfigError(f"Missing mandatory key(s): \
-                          {", ".join(sorted(missing))}")
+        raise ConfigError(f"Missing mandatory key(s): "
+                          "{", ".join(sorted(missing))}")
 
     unknown = raw.keys() - ALL_KEYS
     if unknown:
-        raise ConfigError(f"Unknown key(s): \
-                          {', '.join(sorted(unknown))}")
+        raise ConfigError(f"Unknown key(s): "
+                          "{', '.join(sorted(unknown))}")
 
     width = parse_positive_int(raw["WIDTH"], "WIDTH")
     height = parse_positive_int(raw["HEIGHT"], "HEIGHT")
@@ -160,11 +160,11 @@ def parse_coord(value: str, key: str,
     try:
         x, y = int(parts[0].strip()), int(parts[1].strip())
     except ValueError:
-        raise ConfigError(f"{key} coordinates must be integers, \
-                          got: {value!r}")
+        raise ConfigError(f"{key} coordinates must be integers, "
+                          "got: {value!r}")
     if x < 0 or y < 0:
-        raise ConfigError(f"{key} coordinates must be non-negative, \
-                          got: {value!r}")
+        raise ConfigError(f"{key} coordinates must be non-negative, "
+                          "got: {value!r}")
 
     # validate coordinates are within bounds
     if x > width or y > height:
@@ -199,11 +199,11 @@ def parse_bool(value: str, key: str) -> bool:
     elif v in ("false", "0", "no"):
         return False
     else:
-        raise ConfigError(f"{key} must be a boolean (True/False), \
-                          got: {value!r}")
+        raise ConfigError(f"{key} must be a boolean (True/False), "
+                          "got: {value!r}")
 
 
-def parse_algorithm(value: str):
+def parse_algorithm(value: str) -> str:
     """Parse and validate the maze generation algorithm name.
 
     Accepts "dfs" or "prim", case-insensitive.
@@ -220,8 +220,8 @@ def parse_algorithm(value: str):
     v = value.strip().lower()
     if v not in VALID_ALGORITHMS:
         raise ConfigError(
-            f"Algorithm must be one of {sorted(VALID_ALGORITHMS)},  \
-            got :{value!r}"
+            f"Algorithm must be one of {sorted(VALID_ALGORITHMS)},  "
+            "got :{value!r}"
         )
     return v
 
@@ -240,7 +240,7 @@ def main() -> None:
     try:
         config = parse_config(sys.argv[1])
     except ConfigError as e:
-        print(f"Error: {e}, file=sys.stderr")
+        print(f"Error: {e}, "file=sys.stderr)
         sys.exit(1)
 
     print(config)
