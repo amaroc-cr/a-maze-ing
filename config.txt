@@ -1,15 +1,10 @@
-  # this is a comment
+
     WIDTH=20
-
-    WIDTH=30
-    WIDTH=26
-
-    HEIGHT=19
-    # another comment
+    HEIGHT=20
     ENTRY=0,0
-    EXIT=15,  18
+    EXIT=19,19
     OUTPUT_FILE=maze.txt
-    PERFECT=False
+    PERFECT=True
 
-
-    algorithm = prim
+#    ALGORITHM=prim
+#    SEED=42

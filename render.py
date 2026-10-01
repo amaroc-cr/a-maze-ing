@@ -2,7 +2,7 @@ import sys
 import time
 import shutil
 
-from src.maze import Maze
+from mazegen.maze import Maze
 
 RGB = tuple[int, int, int]
 Pixel = tuple[RGB, str]
