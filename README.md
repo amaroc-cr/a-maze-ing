@@ -210,15 +210,11 @@ In the end we chose to implement Prim's algorithm as our second algorithm. It ke
 
 We chose Prim's, because the maze it creates looks different than a DFS maze, but it's also very usable as a maze and doesn't have a bias towards a certain direction.
 
-### Reusability
-
-(What part of your code is reusable, and how.)
-
 # Process and collaboration
 
 ◦ The roles of each team member.
 - **lvan-der**: Designed the data structure for the maze and its cells; implemented
-  generation of both perfect and imperfect mazes; implemented conversion to
+  generation of both perfect and imperfect mazes, with both the DFS and the prim algorithm; implemented conversion to
   the hexadecimal wall-encoding file format; implemented the shortest-path
   algorithm.
 - **yuhma**: Implemented configuration file parsing and validation; implemented
@@ -234,7 +230,6 @@ We chose Prim's, because the maze it creates looks different than a DFS maze, bu
 - collaboration worked well, different tasks that were pretty well separable and we were both interested in doing our parts!
 - time frame could have been planned better
 
-◦ Have you used any specific tools? Which ones?
 ### Tools used
 
 - **Git & GitHub** — version control, feature branches, pull requests for
